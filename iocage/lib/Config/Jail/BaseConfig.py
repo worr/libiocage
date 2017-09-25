@@ -422,6 +422,19 @@ class BaseConfig(dict):
                     logger=self.logger
                 )
 
+    def _get_usb_device(self) -> typing.List[str]:
+        devices = self.data["usb_device"].split()  # type: typing.List[str]
+        return devices
+
+    def _set_usb_device(
+        self,
+        value: typing.Union[typing.List[str], str]
+    ) -> None:
+        if isinstance(value, list):
+            self.data["usb_device"] = " ".join(value)
+        else:
+            self.data["usb_device"] = value
+
     def _get_host_hostuuid(self):
         try:
             return self.data["host_hostuuid"]
