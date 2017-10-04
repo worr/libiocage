@@ -8,11 +8,10 @@ deps:
 	pip3.6 install -Ur requirements.txt
 install: deps
 	pip3.6 install -U .
-install-dev: deps
-	pip3.6 install flake8-mutable flake8-builtins flake8-mypy bandit bandit-high-entropy-string
+install-dev: install-travis deps
 	pip3.6 install -e .
 install-travis:
-	pip3.6 install flake8-mutable flake8-builtins flake8-mypy bandit bandit-high-entropy-string
+	pip3.6 install flake8-mutable flake8-builtins flake8-mypy bandit bandit-high-entropy-string yapf
 uninstall:
 	pip3.6 uninstall -y iocage
 check:
