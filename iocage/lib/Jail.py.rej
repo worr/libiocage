@@ -1,0 +1,53 @@
+***************
+*** 375,380 ****
+      def fork_exec(
+          self,
+          command: typing.List[str],
+          **temporary_config_override
+      ) -> typing.Generator['iocage.lib.events.IocageEvent', None, None]:
+          """
+--- 375,384 ----
+      def fork_exec(
+          self,
+          command: typing.List[str],
++         error_handler: typing.Optional[typing.Callable[
++             [typing.Tuple[subprocess.Popen, str, str]],
++             typing.Tuple[bool, str],
++         ]]=None
+          **temporary_config_override
+      ) -> typing.Generator['iocage.lib.events.IocageEvent', None, None]:
+          """
+***************
+*** 406,417 ****
+              yield event
+  
+          yield jailExecEvent.begin()
+-         try:
+-             self.exec(command)
+-             yield jailExecEvent.end()
+-         except subprocess.CalledProcessError:
+-             yield jailExecEvent.fail()
+- 
+          for event in self.stop():
+              yield event
+  
+--- 410,428 ----
+              yield event
+  
+          yield jailExecEvent.begin()
++         child, stdout, stderr = jail.exec(command, ignore_error=True)
++         if child.returncode != 0:
++             passed, message = error_handler(child, stdout, stderr)
++             if (error_handler is None) or (passed is False):
++                 err = iocage.lib.errors.CommandFailure(
++                     returncode=child.returncode
++                 )
++                 yield jailExecEvent.fail(err)
++                 raise err
++             else:
++                 self.logger.debug(message)
++         yield jailExecEvent.end()
++         
+          for event in self.stop():
+              yield event
+  
